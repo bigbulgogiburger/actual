@@ -47,7 +47,7 @@ class CustomInterceptor extends Interceptor {
     print('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
 
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);
-    //refreshToken이 아예 ㅇ벗으면
+    //refreshToken이 아예 없으면
     // 당연히 에러를 던진다.
     if(refreshToken == null){
       // 에러를 던질때는 handler.reject를 사용한다.
