@@ -7,8 +7,9 @@ import 'package:actual/restaurant/model/restaurant_detail_model.dart';
 import 'package:actual/restaurant/repository/restaurant_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RestaurantDetailScreen extends StatelessWidget {
+class RestaurantDetailScreen extends ConsumerWidget {
   final String id;
 
   const RestaurantDetailScreen({
@@ -16,24 +17,22 @@ class RestaurantDetailScreen extends StatelessWidget {
     super.key,
   });
 
-  Future<RestaurantDetailModel> getRestaurantDetail() async {
-    final dio = Dio();
-    print('helloo~!~!~!~!!!!');
-    dio.interceptors.add(CustomInterceptor(storage: storage));
-
-    final repository = RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant');
-
-    return repository.getRestaurantDetail(id: id);
+  Future<RestaurantDetailModel> getRestaurantDetail(WidgetRef ref) async {
+    return ref.watch(restaurantRepositoryProvider).getRestaurantDetail(
+          id: id,
+        );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DefaultLayout(
       title: '불타는 떡볶이',
       child: FutureBuilder<RestaurantDetailModel>(
-        future: getRestaurantDetail(),
+        future: ref.watch(restaurantRepositoryProvider).getRestaurantDetail(
+          id: id,
+        ),
         builder: (_, AsyncSnapshot<RestaurantDetailModel> snapshot) {
-          if(snapshot.hasError){
+          if (snapshot.hasError) {
             return Center(
               child: Text(snapshot.error.toString()),
             );
@@ -71,7 +70,8 @@ class RestaurantDetailScreen extends StatelessWidget {
     );
   }
 
-  SliverPadding renderProducts({required List<RestaurantProductModel> products}) {
+  SliverPadding renderProducts(
+      {required List<RestaurantProductModel> products}) {
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: 16.0),
       sliver: SliverList(
