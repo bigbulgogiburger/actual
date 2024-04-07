@@ -30,17 +30,20 @@ class RestaurantCard extends StatelessWidget {
   //상세 내용
   final String? detail;
 
-  const RestaurantCard(
-      {required this.image,
-      required this.name,
-      required this.tags,
-      required this.ratingsCount,
-      required this.deliveryTime,
-      required this.deliveryFee,
-      required this.ratings,
-      this.isDetail = false,
-      this.detail,
-      super.key});
+  // hero 위잿 태그
+  final String? heroKey;
+
+  const RestaurantCard({required this.image,
+    required this.name,
+    required this.tags,
+    required this.ratingsCount,
+    required this.deliveryTime,
+    required this.deliveryFee,
+    required this.ratings,
+    this.isDetail = false,
+    this.detail,
+    this.heroKey,
+    super.key});
 
   factory RestaurantCard.fromModel(
       {required RestaurantModel model, bool isDetail = false}) {
@@ -61,6 +64,7 @@ class RestaurantCard extends StatelessWidget {
       ratings: model.ratings,
       isDetail: isDetail,
       detail: model is RestaurantDetailModel ? model.detail : null,
+      heroKey: model.id,
     );
   }
 
@@ -68,13 +72,20 @@ class RestaurantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (isDetail) image,
-        if (!isDetail)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12.0),
+        if(heroKey !=null)
+        Hero(
+          tag: ObjectKey(heroKey),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(isDetail ? 0 : 12.0),
             child: image,
           ),
-        const SizedBox(
+        ),
+        if(heroKey ==null)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(isDetail ? 0 : 12.0),
+            child: image,
+          ),
+          const SizedBox(
           height: 16.0,
         ),
         Padding(
@@ -122,7 +133,7 @@ class RestaurantCard extends StatelessWidget {
                   _IconText(
                     icon: Icons.monetization_on,
                     label:
-                        '${deliveryFee == 0 ? '무료' : deliveryFee.toString()}',
+                    '${deliveryFee == 0 ? '무료' : deliveryFee.toString()}',
                   ),
                 ],
               ),
