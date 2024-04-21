@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletons/skeletons.dart';
 
 class RestaurantDetailScreen extends ConsumerStatefulWidget {
+  static String get routeName => 'restaurantDetail';
   final String id;
 
   const RestaurantDetailScreen({
@@ -145,7 +146,7 @@ class _RestaurantDetailScreenState
             final model = products[index];
             return Padding(
               padding: const EdgeInsets.only(top: 16.0),
-              child: ProductCard.fromModel(model: model),
+              child: ProductCard.fromRestaurantProductModel(model: model),
             );
           },
           childCount: products.length,

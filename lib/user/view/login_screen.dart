@@ -7,12 +7,16 @@ import 'package:actual/common/const/data.dart';
 import 'package:actual/common/layout/default_layout.dart';
 import 'package:actual/common/secure_storage/secure_storage.dart';
 import 'package:actual/common/view/root_tab.dart';
+import 'package:actual/user/model/user_model.dart';
+import 'package:actual/user/provider/user_me_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
+  static String get routeName => 'login';
+
   const LoginScreen({super.key});
 
   @override
@@ -25,8 +29,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dio = Dio();
-
+    final state = ref.watch(userMeProvider);
 
     return DefaultLayout(
       child: SingleChildScrollView(
@@ -70,35 +73,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   height: 16.0,
                 ),
                 ElevatedButton(
-                  onPressed: () async {
-                    final rawString = '$username:$password';
-
-                    Codec<String, String> stringToBase64 = utf8.fuse(base64);
-
-                    String token = stringToBase64.encode(rawString);
-                    // emulator localhost
-                    // 10.0.0.2
-                    // simulator는 local 과 vm이 같음.
-                    // 127.0.0.1
-                    final resp = await dio.post(
-                      "http://$ip/auth/login",
-                      options: Options(
-                        headers: {
-                          'authorization': 'Basic $token',
-                        },
-                      ),
-                    );
-                    final refreshToken = resp.data['refreshToken'];
-                    final accessToken = resp.data['accessToken'];
-
-                    final storage = ref.read(secureStorageProvider);
-                    storage.write(key: REFRESH_TOKEN_KEY, value: refreshToken);
-                    storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => RootTab(),
-                      ),
-                    );
+                  onPressed: state is UserModelLoading? null : () async {
+                    ref.read(userMeProvider.notifier).login(
+                          username: username,
+                          password: password,
+                        );
+                    // final rawString = '$username:$password';
+                    //
+                    // Codec<String, String> stringToBase64 = utf8.fuse(base64);
+                    //
+                    // String token = stringToBase64.encode(rawString);
+                    // // emulator localhost
+                    // // 10.0.0.2
+                    // // simulator는 local 과 vm이 같음.
+                    // // 127.0.0.1
+                    // final resp = await dio.post(
+                    //   "http://$ip/auth/login",
+                    //   options: Options(
+                    //     headers: {
+                    //       'authorization': 'Basic $token',
+                    //     },
+                    //   ),
+                    // );
+                    // final refreshToken = resp.data['refreshToken'];
+                    // final accessToken = resp.data['accessToken'];
+                    //
+                    // final storage = ref.read(secureStorageProvider);
+                    // storage.write(key: REFRESH_TOKEN_KEY, value: refreshToken);
+                    // storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
+                    // Navigator.of(context).push(
+                    //   MaterialPageRoute(
+                    //     builder: (_) => RootTab(),
+                    //   ),
+                    // );
                   },
                   child: Text(
                     '로그인',
@@ -111,9 +118,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: TextButton.styleFrom(
                     primary: Colors.black,
                   ),
-                  onPressed: () async {
-
-                  },
+                  onPressed: () async {},
                   child: Text('회원가입'),
                 ),
               ],

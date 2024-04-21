@@ -1,5 +1,6 @@
 import 'package:actual/common/const/data.dart';
 import 'package:actual/common/secure_storage/secure_storage.dart';
+import 'package:actual/user/provider/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -9,18 +10,17 @@ final dioProvider = Provider<Dio>((ref) {
 
   final storage = ref.watch(secureStorageProvider);
   dio.interceptors.add(
-    CustomInterceptor(storage: storage),
+    CustomInterceptor(storage: storage, ref: ref),
   );
 
   return dio;
 });
 
 class CustomInterceptor extends Interceptor {
+  final Ref ref;
   final FlutterSecureStorage storage;
 
-  CustomInterceptor({
-    required this.storage,
-  });
+  CustomInterceptor({required this.storage, required this.ref});
 
   // 1) 요청을 보낼때에
   // 요청이 보내질때마다 만약 요청의 헤더에 'accessToken' : 'true'라는 값이 있으면
@@ -30,6 +30,7 @@ class CustomInterceptor extends Interceptor {
   @override
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
+    // await storage.deleteAll();
     print('[REQ] [${options.method}] ${options.uri}');
 
     if (options.headers['accessToken'] == 'true') {
@@ -76,9 +77,12 @@ class CustomInterceptor extends Interceptor {
     }
 
     final isStatus401 = err.response?.statusCode == 401;
-    final isPathRefresh = err.requestOptions.path == '/auth/token';
+    // final isPathRefresh = err.requestOptions.path == '/auth/token';
 
-    if (isStatus401 && isPathRefresh) {
+    if (isStatus401
+        // && isPathRefresh
+    ) {
+      print('here');
       final dio = Dio();
       try {
         final resp = await dio.post(
@@ -99,6 +103,8 @@ class CustomInterceptor extends Interceptor {
         // 성공에 대한 값을 반환
         return handler.resolve(response);
       } on DioException catch (e) {
+        print('heelo');
+        ref.read(authProvider.notifier).logout();
         return handler.reject(e);
       }
     }
